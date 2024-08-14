@@ -1,9 +1,10 @@
-#!/usr/bin/env/python3
+#!/usr/bin/env python3
 from typing import Union
 import redis
 import uuid
 """
 This module is to store an instance of redis db and store data in it
+executor is main.py
 """
 
 
@@ -30,3 +31,23 @@ class Cache:
         # sets the key to the data value in the redis db
         self._redis.set(key, data)
         return key
+
+    def get(self, key, fn=None):
+        """
+        This function takes a key, and optional function to convert the data.
+        It returns the data stored in the key, or None if the key is not found
+        """
+        data = self._redis.get(key)
+        if data is None:
+            return None
+        if fn is not None:
+            return fn(data)
+        return data
+
+    def get_str(self, key):
+        " This calls the get method with a predefined conversion to str"
+        return self.get(key, str)
+
+    def get_int(self, key):
+        "This calls the get method with a predefined conversion to int"
+        return self.get(key, int)
