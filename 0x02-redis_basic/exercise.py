@@ -2,11 +2,31 @@
 from typing import Union
 import redis
 import uuid
+from functools import wraps
 """
 This module is to store an instance of redis db and store data in it
 executor is main.py
 """
 
+def count_calls(method):
+    @wraps(method)
+    # Method is the decorated function.
+        # The args and kwargs is for the method to be called,
+        # it consists of arguments
+    def wrapper(self, *args, **kwargs):
+        # This creates a unique name all instance of a class -- a GLOBAL KEY 
+        # "that calls this method share."
+        # NT: it doesnt use self as "self" creates instance attibutes
+        # and we need a local variable all instances of same class, same method
+        # can relate to -- It is also more striaghtforward.
+        key = method.__qualname__ 
+        # This uses self to access the _redis connection specific to that 
+        # Cache class instance, and since "key" is same for all instances, 
+        # incrementaion occurs globally. 
+        self._redis.incr(key)
+        # Returns or applies the actual method passed.
+        return method(self, *args, **kwargs)
+    return wrapper
 
 class Cache:
     """
@@ -21,7 +41,7 @@ class Cache:
         .flushdb() - makes each instance of the class have an empty redis db
         """
         self._redis.flushdb()
-
+    @count_calls # This decorates the store function with count_calls decorators.
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         This method stores data in the redis db using a random key to a value
