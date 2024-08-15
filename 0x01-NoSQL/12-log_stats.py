@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Module for log stats"""
 
-
 if __name__ == "__main__":
     """ Include mongob"""
     from pymongo import MongoClient
